@@ -1,13 +1,39 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import HomeScreen from '@/components/HomeScreen';
+import SessionView from '@/components/SessionView';
+import { useSession } from '@/hooks/useSession';
 
 const Index = () => {
+  const {
+    session,
+    members,
+    memberId,
+    loading,
+    error,
+    createSession,
+    joinSession,
+    updateLocation,
+    leaveSession,
+  } = useSession();
+
+  if (session) {
+    return (
+      <SessionView
+        session={session}
+        members={members}
+        memberId={memberId}
+        onUpdateLocation={updateLocation}
+        onLeave={leaveSession}
+      />
+    );
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <HomeScreen
+      onStart={createSession}
+      onJoin={joinSession}
+      loading={loading}
+      error={error}
+    />
   );
 };
 
