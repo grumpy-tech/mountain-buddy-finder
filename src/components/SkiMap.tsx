@@ -52,14 +52,13 @@ export default function SkiMap({ members, myMemberId }: SkiMapProps) {
       zoomControl: true,
     });
 
-    // Clean white/snow-toned base map
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://carto.com">CARTO</a>',
-      maxZoom: 19,
-      subdomains: 'abcd',
+    // Satellite imagery — shows actual snow cover
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+      maxZoom: 18,
     }).addTo(map);
 
-    // Ski piste overlay — runs, lifts, trails
+    // Ski piste overlay from OpenSnowMap
     L.tileLayer('https://tiles.opensnowmap.org/pistes/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://opensnowmap.org">OpenSnowMap</a>',
       maxZoom: 18,

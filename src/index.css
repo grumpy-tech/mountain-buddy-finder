@@ -73,9 +73,9 @@
   }
 }
 
-/* Leaflet overrides for snow theme */
+/* Leaflet overrides for dark theme */
 .leaflet-container {
-  background: hsl(210 20% 95%) !important;
+  background: hsl(220 20% 10%) !important;
 }
 
 .leaflet-control-zoom a {
