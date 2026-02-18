@@ -52,17 +52,17 @@ export default function SkiMap({ members, myMemberId }: SkiMapProps) {
       zoomControl: true,
     });
 
-    // Base terrain layer
-    L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-      maxZoom: 17,
+    // Satellite imagery — shows actual snow cover
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+      maxZoom: 18,
     }).addTo(map);
 
     // Ski piste overlay from OpenSnowMap
     L.tileLayer('https://tiles.opensnowmap.org/pistes/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://opensnowmap.org">OpenSnowMap</a>',
       maxZoom: 18,
-      opacity: 0.85,
+      opacity: 0.9,
     }).addTo(map);
 
     mapRef.current = map;
