@@ -52,10 +52,11 @@ export default function SkiMap({ members, myMemberId }: SkiMapProps) {
       zoomControl: true,
     });
 
-    // Satellite imagery — shows actual snow cover
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    // Satellite imagery with winter snow filter
+    const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: '&copy; Esri, Maxar, Earthstar Geographics',
       maxZoom: 18,
+      className: 'winter-tiles',
     }).addTo(map);
 
     // Ski piste overlay from OpenSnowMap
@@ -133,7 +134,16 @@ export default function SkiMap({ members, myMemberId }: SkiMapProps) {
     }
   }, [members, myMemberId]);
 
-  return <div ref={containerRef} className="h-full w-full rounded-lg" />;
+  return (
+    <>
+      <style>{`
+        .winter-tiles {
+          filter: saturate(0.3) brightness(1.4) contrast(0.9) hue-rotate(200deg);
+        }
+      `}</style>
+      <div ref={containerRef} className="h-full w-full rounded-lg" />
+    </>
+  );
 }
 
 function getTimeSince(lastSeen: string | null): string {
