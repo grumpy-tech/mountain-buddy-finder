@@ -23,7 +23,7 @@ export default function SessionView({
   onUpdateLocation,
   onLeave,
 }: SessionViewProps) {
-  const geo = useGeolocation(true, 15000);
+  const geo = useGeolocation(true);
   const mapRef = useRef<SkiMapHandle>(null);
 
   useEffect(() => {

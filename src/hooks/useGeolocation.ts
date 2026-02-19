@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 interface GeolocationState {
   latitude: number | null;
@@ -7,7 +7,7 @@ interface GeolocationState {
   loading: boolean;
 }
 
-export function useGeolocation(enabled: boolean, intervalMs = 15000) {
+export function useGeolocation(enabled: boolean) {
   const [state, setState] = useState<GeolocationState>({
     latitude: null,
     longitude: null,
@@ -15,13 +15,17 @@ export function useGeolocation(enabled: boolean, intervalMs = 15000) {
     loading: true,
   });
 
-  const updatePosition = useCallback(() => {
+  useEffect(() => {
+    if (!enabled) return;
+
     if (!navigator.geolocation) {
       setState(prev => ({ ...prev, error: 'Geolocation not supported', loading: false }));
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
+    // Use watchPosition instead of repeated getCurrentPosition
+    // This only triggers the permission prompt once
+    const watchId = navigator.geolocation.watchPosition(
       (position) => {
         setState({
           latitude: position.coords.latitude,
@@ -35,15 +39,9 @@ export function useGeolocation(enabled: boolean, intervalMs = 15000) {
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
     );
-  }, []);
 
-  useEffect(() => {
-    if (!enabled) return;
-
-    updatePosition();
-    const interval = setInterval(updatePosition, intervalMs);
-    return () => clearInterval(interval);
-  }, [enabled, intervalMs, updatePosition]);
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [enabled]);
 
   return state;
 }
