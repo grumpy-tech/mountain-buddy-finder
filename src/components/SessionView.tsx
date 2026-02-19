@@ -98,7 +98,7 @@ export default function SessionView({
 
       {/* Map */}
       <div className="flex-1 relative">
-        <SkiMap members={members} myMemberId={memberId} />
+        <SkiMap members={members} myMemberId={memberId} myLatitude={geo.latitude} myLongitude={geo.longitude} />
         {geo.error && (
           <div className="absolute bottom-4 left-4 right-4 bg-destructive/90 text-destructive-foreground text-sm p-3 rounded-lg text-center backdrop-blur-sm">
             📍 {geo.error} — Enable location in your browser settings
