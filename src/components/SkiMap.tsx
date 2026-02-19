@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { SessionMember } from '@/hooks/useSession';
@@ -34,9 +34,11 @@ function createMemberIcon(color: string, isMe: boolean) {
 interface SkiMapProps {
   members: SessionMember[];
   myMemberId: string | null;
+  myLatitude?: number | null;
+  myLongitude?: number | null;
 }
 
-export default function SkiMap({ members, myMemberId }: SkiMapProps) {
+export default function SkiMap({ members, myMemberId, myLatitude, myLongitude }: SkiMapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
@@ -134,6 +136,12 @@ export default function SkiMap({ members, myMemberId }: SkiMapProps) {
     }
   }, [members, myMemberId]);
 
+  const centerOnMe = useCallback(() => {
+    if (mapRef.current && myLatitude && myLongitude) {
+      mapRef.current.setView([myLatitude, myLongitude], 16, { animate: true });
+    }
+  }, [myLatitude, myLongitude]);
+
   return (
     <>
       <style>{`
@@ -141,7 +149,21 @@ export default function SkiMap({ members, myMemberId }: SkiMapProps) {
           filter: saturate(0.3) brightness(1.4) contrast(0.9) hue-rotate(200deg);
         }
       `}</style>
-      <div ref={containerRef} className="h-full w-full rounded-lg" />
+      <div className="relative h-full w-full">
+        <div ref={containerRef} className="h-full w-full rounded-lg" />
+        {myLatitude && myLongitude && (
+          <button
+            onClick={centerOnMe}
+            className="absolute bottom-4 right-4 z-[1000] w-12 h-12 rounded-full bg-card border border-border shadow-lg flex items-center justify-center text-primary hover:bg-secondary transition-colors"
+            aria-label="Center on my location"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+            </svg>
+          </button>
+        )}
+      </div>
     </>
   );
 }
