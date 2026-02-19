@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { SessionMember } from '@/hooks/useSession';
@@ -31,14 +31,16 @@ function createMemberIcon(color: string, isMe: boolean) {
   });
 }
 
+export interface SkiMapHandle {
+  centerOnMember: (memberId: string) => void;
+}
+
 interface SkiMapProps {
   members: SessionMember[];
   myMemberId: string | null;
-  myLatitude?: number | null;
-  myLongitude?: number | null;
 }
 
-export default function SkiMap({ members, myMemberId, myLatitude, myLongitude }: SkiMapProps) {
+const SkiMap = forwardRef<SkiMapHandle, SkiMapProps>(({ members, myMemberId }, ref) => {
   const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
@@ -52,6 +54,7 @@ export default function SkiMap({ members, myMemberId, myLatitude, myLongitude }:
       center: BIG_WHITE_CENTER,
       zoom: DEFAULT_ZOOM,
       zoomControl: true,
+      attributionControl: false,
     });
 
     // Satellite imagery with winter snow filter
@@ -136,11 +139,16 @@ export default function SkiMap({ members, myMemberId, myLatitude, myLongitude }:
     }
   }, [members, myMemberId]);
 
-  const centerOnMe = useCallback(() => {
-    if (mapRef.current && myLatitude && myLongitude) {
-      mapRef.current.setView([myLatitude, myLongitude], 16, { animate: true });
-    }
-  }, [myLatitude, myLongitude]);
+  useImperativeHandle(ref, () => ({
+    centerOnMember: (id: string) => {
+      const member = members.find(m => m.id === id);
+      if (member?.latitude && member?.longitude && mapRef.current) {
+        mapRef.current.setView([member.latitude, member.longitude], 16, { animate: true });
+        const marker = markersRef.current.get(id);
+        if (marker) marker.openPopup();
+      }
+    },
+  }), [members]);
 
   return (
     <>
@@ -149,24 +157,13 @@ export default function SkiMap({ members, myMemberId, myLatitude, myLongitude }:
           filter: saturate(0.3) brightness(1.4) contrast(0.9) hue-rotate(200deg);
         }
       `}</style>
-      <div className="relative h-full w-full">
-        <div ref={containerRef} className="h-full w-full rounded-lg" />
-        {myLatitude && myLongitude && (
-          <button
-            onClick={centerOnMe}
-            className="absolute bottom-4 right-4 z-[1000] w-12 h-12 rounded-full bg-card border border-border shadow-lg flex items-center justify-center text-primary hover:bg-secondary transition-colors"
-            aria-label="Center on my location"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
-            </svg>
-          </button>
-        )}
-      </div>
+      <div ref={containerRef} className="h-full w-full rounded-lg" />
     </>
   );
-}
+});
+
+SkiMap.displayName = 'SkiMap';
+export default SkiMap;
 
 function getTimeSince(lastSeen: string | null): string {
   if (!lastSeen) return 'No signal';

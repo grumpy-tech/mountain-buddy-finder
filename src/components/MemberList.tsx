@@ -8,9 +8,10 @@ const COLORS = [
 interface MemberListProps {
   members: SessionMember[];
   myMemberId: string | null;
+  onMemberClick?: (memberId: string) => void;
 }
 
-export default function MemberList({ members, myMemberId }: MemberListProps) {
+export default function MemberList({ members, myMemberId, onMemberClick }: MemberListProps) {
   function getTimeSince(lastSeen: string | null): string {
     if (!lastSeen) return 'Waiting...';
     const diff = Date.now() - new Date(lastSeen).getTime();
@@ -26,9 +27,10 @@ export default function MemberList({ members, myMemberId }: MemberListProps) {
         const isMe = member.id === myMemberId;
         const hasSignal = member.latitude !== null;
         return (
-          <div
+          <button
             key={member.id}
-            className="flex items-center gap-2 bg-card rounded-full px-3 py-2 shrink-0 border border-border"
+            onClick={() => onMemberClick?.(member.id)}
+            className="flex items-center gap-2 bg-card rounded-full px-3 py-2 shrink-0 border border-border hover:border-primary/50 transition-colors cursor-pointer"
           >
             <div className={`w-3 h-3 rounded-full ${hasSignal ? COLORS[i % COLORS.length] : 'bg-muted-foreground'}`} />
             <span className="text-sm font-medium text-foreground whitespace-nowrap">
@@ -38,7 +40,7 @@ export default function MemberList({ members, myMemberId }: MemberListProps) {
             <span className={`text-xs ${hasSignal ? 'text-pine' : 'text-muted-foreground'}`}>
               {getTimeSince(member.last_seen)}
             </span>
-          </div>
+          </button>
         );
       })}
     </div>

@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, LogOut, MapPin, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import SkiMap from '@/components/SkiMap';
+import SkiMap, { type SkiMapHandle } from '@/components/SkiMap';
 import MemberList from '@/components/MemberList';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import type { Session, SessionMember } from '@/hooks/useSession';
@@ -24,8 +24,8 @@ export default function SessionView({
   onLeave,
 }: SessionViewProps) {
   const geo = useGeolocation(true, 15000);
+  const mapRef = useRef<SkiMapHandle>(null);
 
-  // Push location updates
   useEffect(() => {
     if (geo.latitude && geo.longitude) {
       onUpdateLocation(geo.latitude, geo.longitude);
@@ -50,6 +50,10 @@ export default function SessionView({
     } else {
       copyCode();
     }
+  };
+
+  const handleMemberClick = (id: string) => {
+    mapRef.current?.centerOnMember(id);
   };
 
   return (
@@ -93,12 +97,12 @@ export default function SessionView({
 
       {/* Member pills */}
       <div className="px-3 py-2 bg-card/50">
-        <MemberList members={members} myMemberId={memberId} />
+        <MemberList members={members} myMemberId={memberId} onMemberClick={handleMemberClick} />
       </div>
 
       {/* Map */}
       <div className="flex-1 relative">
-        <SkiMap members={members} myMemberId={memberId} myLatitude={geo.latitude} myLongitude={geo.longitude} />
+        <SkiMap ref={mapRef} members={members} myMemberId={memberId} />
         {geo.error && (
           <div className="absolute bottom-4 left-4 right-4 bg-destructive/90 text-destructive-foreground text-sm p-3 rounded-lg text-center backdrop-blur-sm">
             📍 {geo.error} — Enable location in your browser settings
